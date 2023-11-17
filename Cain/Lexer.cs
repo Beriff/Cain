@@ -120,9 +120,10 @@ namespace Cain
 						{
 							//newline is hit, set the lexer index after it and move forward
 							i = a;
-							continue;
+							break;
 						}
 					}
+					continue;
 				}
 
 				//check if its a number literal
