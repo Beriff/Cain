@@ -4,7 +4,12 @@
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Hello, World!");
+			string file = args[0];
+			var data = Lexer.Lex(File.ReadAllText(file), new(true));
+			foreach( var (token, tokendata) in data )
+			{
+				Console.WriteLine($"[ {token}: ({tokendata}) ],");
+			}
 		}
 	}
 }
