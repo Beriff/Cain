@@ -183,7 +183,7 @@ namespace Cain
 					}
 					continue;
 				}
-
+				
 				// finally, check if it is a space symbol
 				if (IsSpaceSymbol(curr_symbol))
 				{

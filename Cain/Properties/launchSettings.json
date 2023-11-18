@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Cain": {
+      "commandName": "Project",
+      "commandLineArgs": "example.cavy"
+    }
+  }
+}
