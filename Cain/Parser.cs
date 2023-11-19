@@ -120,11 +120,74 @@ namespace Cain
 					|| tokenpair.token == LexicalToken.Keyword_Obj
 					|| tokenpair.token == LexicalToken.Control_Message_Begin
 					|| tokenpair.token == LexicalToken.Control_Ctx_Begin
+					|| tokenpair.token == LexicalToken.Control_OL_Begin
 					)
 				{
 
 					switch (tokenpair.token)
 					{
+						case LexicalToken.Control_OL_Begin:
+							//parse only if its the only element in lextokens
+							int olparity = 0;
+							for (int j = 0; j < tokencount; j++)
+							{
+								int token_response = lextokens[j].token switch
+								{
+									LexicalToken.Control_OL_Begin => 1,
+									LexicalToken.Control_OL_End => -1,
+									_ => 0
+								};
+								olparity += token_response;
+								if (olparity == 0 && token_response == -1)
+								{
+									if (j == tokencount - 1)
+									{
+										//its the only element in lextokens
+										//evaluate it
+										if (tokencount == 2)
+										{
+											//its empty object literal []
+											return new ASTNode(ASTToken.ObjLtr, null!);
+										}
+
+										//split the execution by commas
+										List<List<(LexicalToken, string)>> betweencommas = new();
+										betweencommas.Add(new());
+										var ol_inside = lextokens.GetRange(1, tokencount - 2);
+										int sublist_pointer = 0;
+										for (int k = 0; k < ol_inside.Count; k++)
+										{
+											if (ol_inside[k].token == LexicalToken.Control_Comma)
+											{
+												sublist_pointer++;
+												betweencommas.Add(new());
+											}
+											else
+											{
+												betweencommas[sublist_pointer].Add(ol_inside[k]);
+											}
+										}
+										List<ASTNode> object_attrs = new();
+										foreach (var ls in betweencommas)
+										{
+											var objltr_attr = Parse(ls);
+											if (!CanReturnObject(objltr_attr.Token))
+												throw new ParsingException("Object literal can only contain objects");
+
+											object_attrs.Add(objltr_attr);
+										}
+										return new ASTNode(ASTToken.ObjLtr, null!, object_attrs);
+
+									}
+									else
+									{
+										//skip object literal
+										i = j; continue;
+									}
+								}
+							}
+							break;
+
 						case LexicalToken.Keyword_Ctx:
 							if (i == 0 || i == tokencount - 1)
 								throw new ParsingException("Invalid token location");
@@ -319,7 +382,7 @@ namespace Cain
 
 			}
 
-			throw new ParsingException($"Holy hell - {lextokens.Count}");
+			throw new ParsingException($"Unexpected symbol - {lextokens[0].token}");
 		}
 
 		public static void PrettyPrint(ASTNode root, string inden = "")
