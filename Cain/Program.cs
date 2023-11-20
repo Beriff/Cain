@@ -9,8 +9,11 @@
 			try
 			{
 				var root = Parser.Parse(data);
-				Parser.PrettyPrint(root);
-			} catch (ParsingException e)
+
+				var interpreter = new Interpreter(null, CavyObject.GetGlobals());
+				interpreter.Interpret(root);
+
+			} catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
 			}

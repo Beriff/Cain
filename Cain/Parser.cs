@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Cain
 {
@@ -85,9 +86,8 @@ namespace Cain
 				ASTToken.MsgCall => true,
 				ASTToken.ObjLtr => true,
 				ASTToken.Asterisk => true,
+				ASTToken.Identifier => true,
 
-
-				ASTToken.Identifier => false,
 				ASTToken.CodeLtr => false,
 				ASTToken.Root => false,
 				_ => false
@@ -206,6 +206,8 @@ namespace Cain
 								ParsingException.ExpectedAfter("{code}", "ctx");
 
 							var ctxnode = new ASTNode(ASTToken.Ctx, null!, val_before, val_after);
+							val_before.Parent = ctxnode;
+							val_after.Parent = ctxnode;
 							return ctxnode;
 
 						case LexicalToken.Keyword_Obj:
@@ -225,7 +227,10 @@ namespace Cain
 							if (val_after.Token != ASTToken.CodeLtr)
 								ParsingException.ExpectedAfter("{code}", "ctx");
 
-							return new ASTNode(ASTToken.Obj, null!, val_before, val_after);
+							var objnode = new ASTNode(ASTToken.Obj, null!, val_before, val_after);
+							val_before.Parent = objnode;
+							val_after.Parent = objnode;
+							return objnode;
 
 						case LexicalToken.Control_Message_Begin:
 							if (i == 0 || i == tokencount - 1)
@@ -244,7 +249,10 @@ namespace Cain
 							if (!CanReturnObject(val_after.Token))
 								ParsingException.ExpectedAfter("{code}", "ctx");
 
-							return new ASTNode(ASTToken.MsgCall, null!, val_before, val_after);
+							var msgnode = new ASTNode(ASTToken.MsgCall, null!, val_before, val_after);
+							val_before.Parent = msgnode;
+							val_after.Parent = msgnode;
+							return msgnode;
 
 						case LexicalToken.Control_Ctx_Begin:
 							//ladies and gentlemen, fasten your seatbelts
@@ -295,13 +303,19 @@ namespace Cain
 									List<ASTNode> codeltr_children = new();
 
 									//parse every single message call separately
+									var codeltrnode = new ASTNode(ASTToken.CodeLtr, null!);
 									for (int k = 0; k < dot_positions.Count; k++)
 									{
 										int dotpos = dot_positions[k];
 										int startpos = k == 0 ? 1 : dot_positions[k - 1] + 1;
-										codeltr_children.Add(Parse(lextokens.GetRange(startpos, dotpos - startpos + 1)));
+										var child = Parse(lextokens.GetRange(startpos, dotpos - startpos + 1));
+										child.Parent = codeltrnode;
+										codeltr_children.Add(child);
 									}
-									return new ASTNode(ASTToken.CodeLtr, null!, codeltr_children);
+									codeltrnode.Children = codeltr_children;
+									return codeltrnode;
+									
+
 								}
 							}
 							throw new ParsingException("Unmatched curly bracket");
@@ -338,8 +352,10 @@ namespace Cain
 						&& val_after.Token != ASTToken.AttrAccess)
 						ParsingException.ExpectedAfter("identifier", "->");
 
-					return new ASTNode(ASTToken.AttrAccess, null!, val_before, val_after);
-
+					var attraccessnode = new ASTNode(ASTToken.AttrAccess, null!, val_before, val_after);
+					val_before.Parent = attraccessnode;
+					val_after.Parent = attraccessnode;
+					return attraccessnode;
 				}
 
 			}
