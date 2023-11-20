@@ -12,6 +12,10 @@ System ctx {
 
 }
 ```
+interpret & run the code file with
+```
+cain file_name.cavy
+```
 ## Everything is an object?
 Right. Your code declared in {curly braces}, namespaces, object attribute keys, everything except the basic keywords (there's only two: `ctx` and `obj`). Of course this poses a problem: how can we define any data type if
 everything we got is an object. The "primitive" data types are built from a special definition of natural numbers (slightly modified [von Neumann numerals](https://en.wikipedia.org/wiki/Set-theoretic_definition_of_natural_numbers) ):
