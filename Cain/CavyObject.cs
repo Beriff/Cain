@@ -67,7 +67,19 @@ namespace Cain
 				}
 				throw new KeyNotFoundException("Wrong cavy object attribute key");
 			}
-			set => Attributes[index] = value;
+			set
+			{
+				foreach(var kv in Attributes)
+				{
+					if(kv.Key.Equals(index))
+					{
+						Attributes[kv.Key] = value;
+						return;
+					}
+						
+				}
+				Attributes.Add(index, value);
+			}
 		}
 
 
@@ -135,6 +147,7 @@ namespace Cain
 		public static CavyObject System()
 		{
 			CavyObject system = new();
+
 			CavyObject console = new();
 			CavyObject _out = new();
 			_out.Message = (msgobj, parent) =>
@@ -144,6 +157,16 @@ namespace Cain
 			};
 			console[RawString("out")] = _out;
 			system[RawString("console")] = console;
+
+			CavyObject var = new();
+			var.Message = (msgobj, parent) =>
+			{
+				msgobj[RawString("attr0")][msgobj[RawString("attr1")]] = msgobj[RawString("attr2")];
+				return new();
+			
+			};
+			system[RawString("var")] = var;
+
 			return system;
 
 		}

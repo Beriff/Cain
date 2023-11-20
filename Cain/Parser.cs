@@ -168,15 +168,17 @@ namespace Cain
 											}
 										}
 										List<ASTNode> object_attrs = new();
+										ASTNode objltr_node = new(ASTToken.ObjLtr, null!, object_attrs);
 										foreach (var ls in betweencommas)
 										{
 											var objltr_attr = Parse(ls);
+											objltr_attr.Parent = objltr_node;
 											if (!CanReturnObject(objltr_attr.Token))
 												throw new ParsingException("Object literal can only contain objects");
 
 											object_attrs.Add(objltr_attr);
 										}
-										return new ASTNode(ASTToken.ObjLtr, null!, object_attrs);
+										return objltr_node;
 
 									}
 									else
